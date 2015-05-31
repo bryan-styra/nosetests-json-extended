@@ -6,6 +6,11 @@ from sink import Sink, TestCaseDescription, ErrorDescription
 
 
 class JsonExtendedPlugin(Plugin):
+    name = 'json-extended'
+    score = 2000
+
+    def options(self, parser, env):
+        Plugin.options(self, parser, env)
 
     def configure(self, options, config):
         Plugin.configure(self, options, config)

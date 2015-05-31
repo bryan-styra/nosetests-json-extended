@@ -6,7 +6,7 @@ from collections import namedtuple
 
 
 class Helper(PluginTester, unittest.TestCase):
-    activate = '--with-jsonextendedplugin'
+    activate = '--with-json-extended'
     plugins = [JsonExtendedPlugin()]
 
     def makeSuite(self):
