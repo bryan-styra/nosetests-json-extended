@@ -1,5 +1,8 @@
-
 import json
+import os
+import sys
+import time
+
 from collections import namedtuple, Counter
 from operator import itemgetter, attrgetter
 
@@ -74,4 +77,11 @@ class Sink:
         modules_out = map(lambda m: m.to_dict(), modules.values())
         modules_out.sort(key=itemgetter('name'))
 
-        return dict(modules=modules_out)
+        return dict(modules=modules_out, metadata=self.metadata())
+
+    def metadata(self):
+        return dict(command=' '.join(sys.argv),
+                    executable=sys.executable,
+                    time=time.time(),
+                    prefix=sys.prefix,
+                    cwd=os.getcwd())
