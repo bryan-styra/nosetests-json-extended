@@ -38,9 +38,15 @@ def _format_error(err):
     message_list = traceback.format_exception_only(err[0], err[1])
     message = '\n'.join(message_list).strip('\n')
 
-    tb = traceback.extract_tb(err[2])
+    tb = list(wrap_traceback(traceback.extract_tb(err[2])))
 
     return ErrorDescription(message, tb)
+
+
+def wrap_traceback(traceback_in):
+    names = ('filename', 'linenr', 'function', 'line')
+    for tb in traceback_in:
+        yield dict(zip(names, tb))
 
 
 def _split_id(test_id):

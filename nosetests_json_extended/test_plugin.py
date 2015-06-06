@@ -1,6 +1,7 @@
 import unittest
 from nose.plugins import Plugin, PluginTester
-from plugin import JsonExtendedPlugin
+from plugin import JsonExtendedPlugin, wrap_traceback
+import plugin
 
 from collections import namedtuple
 
@@ -59,3 +60,14 @@ class ErrorTest(Helper):
         self.assertEquals(result.result, 'error')
         self.assertEquals(result.error.message, 'Exception: errormessage')
         self.assertIsInstance(result.error.traceback, list)
+
+
+class TracebackWrapperTest(unittest.TestCase):
+
+    def test(self):
+        out = list(wrap_traceback([('file.py', 4, 'foo', 'bar()')]))
+
+        self.assertEquals(out[0], dict(filename='file.py',
+                                       linenr=4,
+                                       function='foo',
+                                       line='bar()'))
