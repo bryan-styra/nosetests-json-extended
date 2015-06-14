@@ -2,7 +2,7 @@
 
 from setuptools import setup
 
-description = 'Create extended json logging output for python' + \
+description = 'Create json logging output for python' + \
               'nosetests unittest framework',
 
 setup(
@@ -21,10 +21,12 @@ setup(
         ]
     },
     classifiers=[
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 3',
         'Topic :: Software Development :: Testing'
     ],
+    long_description=open('README.rst', 'r').read()
 )
