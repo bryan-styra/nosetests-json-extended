@@ -37,7 +37,7 @@ class Module:
         result_counts = Counter(map(attrgetter('result'), self.testcases))
 
         # convert testcases to dicts
-        testcases = map(lambda tc: tc.to_dict(), self.testcases)
+        testcases = list(map(lambda tc: tc.to_dict(), self.testcases))
 
         return dict(name=self.name,
                     nr_success=result_counts['success'],
@@ -74,14 +74,12 @@ class Sink:
             module.testcases.append(record)
 
         # Convert all modules to dicts
-        modules_out = map(lambda m: m.to_dict(), modules.values())
+        modules_out = list(map(lambda m: m.to_dict(), modules.values()))
         modules_out.sort(key=itemgetter('name'))
 
         return dict(modules=modules_out, metadata=self.metadata())
 
     def metadata(self):
         return dict(command=' '.join(sys.argv),
-                    executable=sys.executable,
                     time=time.time(),
-                    prefix=sys.prefix,
                     cwd=os.getcwd())

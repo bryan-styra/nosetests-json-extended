@@ -1,9 +1,10 @@
-import unittest
-from collections import namedtuple
+from __future__ import absolute_import
 
-from sink import Sink
-from sink import TestCaseDescription as TC
-from sink import ErrorDescription
+import unittest
+
+from nosetests_json_extended.sink import Sink
+from nosetests_json_extended.sink import TestCaseDescription as TC
+from nosetests_json_extended.sink import ErrorDescription
 
 
 class SinkTest(unittest.TestCase):

@@ -1,8 +1,11 @@
 
+from __future__ import absolute_import
+
 import traceback
 from nose.plugins import Plugin
 
-from sink import Sink, TestCaseDescription, ErrorDescription
+from nosetests_json_extended.sink import (Sink, TestCaseDescription,
+                                          ErrorDescription)
 
 
 class JsonExtendedPlugin(Plugin):

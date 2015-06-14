@@ -7,7 +7,7 @@ description = 'Create extended json logging output for python' + \
 
 setup(
     name='nosetests-json-extended',
-    version='0.0.0',
+    version='0.1.0',
     author='Thijs Schenkelaars',
     author_email='thijs@schenkelaars.nl',
     description=description,
@@ -16,7 +16,15 @@ setup(
     zip_safe=False,
     entry_points={
         'nose.plugins.0.10': [
-            'nosetests_json_extended = nosetests_json_extended.plugin:JsonExtendedPlugin'
+            'nosetests_json_extended = ' +
+            'nosetests_json_extended.plugin:JsonExtendedPlugin'
         ]
-    }
+    },
+    classifiers=[
+        'Intended Audience :: Developers',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3',
+        'Topic :: Software Development :: Testing'
+    ],
 )

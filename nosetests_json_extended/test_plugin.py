@@ -1,9 +1,8 @@
-import unittest
-from nose.plugins import Plugin, PluginTester
-from plugin import JsonExtendedPlugin, wrap_traceback
-import plugin
+from __future__ import absolute_import
 
-from collections import namedtuple
+import unittest
+from nose.plugins import PluginTester
+from nosetests_json_extended.plugin import JsonExtendedPlugin, wrap_traceback
 
 
 class Helper(PluginTester, unittest.TestCase):
