@@ -28,7 +28,10 @@ class JsonExtendedPlugin(Plugin):
         self._sink.write()
 
     def addError(self, test, err, capt=None):
-        self._sink.add('error', _split_id(test.id()), _format_error(err))
+        if issubclass(err[0], SyntaxError):
+            self._sink.add_syntaxerror(err[1])
+        else:
+            self._sink.add('error', _split_id(test.id()), _format_error(err))
 
     def addFailure(self, test, err, capt=None, tb_info=None):
         self._sink.add('failed', _split_id(test.id()), _format_error(err))

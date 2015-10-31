@@ -46,9 +46,36 @@ class Module:
                     testcases=testcases)
 
 
+class Syntax:
+    def __init__(self, error):
+        self.filename = error.filename
+        self.linenr = error.lineno
+        self.column = error.offset
+
+        self.message = error.__class__.__name__ + ': ' + str(error)
+
+        if error.text:
+            self.message += '\n\n' + error.text.strip()
+
+            if error.offset:
+                text = error.text.rstrip()
+                nr_white_space = len(text) - len(text.lstrip())
+                nr = error.offset-nr_white_space-1
+                self.message += '\n' + ' ' * nr + '^'
+
+    def to_dict(self):
+        tb = [dict(filename=self.filename,
+                   linenr=self.linenr,
+                   column=self.column)]
+        out = dict(name=self.filename,
+                   error=dict(message=self.message, traceback=tb))
+        return out
+
+
 class Sink:
     def __init__(self):
         self.records = []
+        self.syntaxerrors = []
         self.output_file = 'nosetests.json'
 
     def write(self):
@@ -58,6 +85,9 @@ class Sink:
 
     def add(self, result, testcase, error):
         self.records.append(TestCase(result, testcase, error))
+
+    def add_syntaxerror(self, error):
+        self.syntaxerrors.append(Syntax(error))
 
     def generate(self):
 
@@ -77,7 +107,12 @@ class Sink:
         modules_out = list(map(lambda m: m.to_dict(), modules.values()))
         modules_out.sort(key=itemgetter('name'))
 
-        return dict(modules=modules_out, metadata=self.metadata())
+        # Convert all syntax errors to dicts
+        syntaxerrors = [error.to_dict() for error in self.syntaxerrors]
+
+        return dict(metadata=self.metadata(),
+                    syntaxerrors=syntaxerrors,
+                    modules=modules_out)
 
     def metadata(self):
         return dict(command=' '.join(sys.argv),

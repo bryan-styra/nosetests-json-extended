@@ -55,3 +55,26 @@ class SinkTest(unittest.TestCase):
         self.assertEqual(tc1['result'], 'error')
         self.assertEqual(tc1['error']['message'], 'error_desc')
         self.assertEqual(tc1['error']['traceback'], ['tb0', 'tb1'])
+
+    def test_testcase_syntax(self):
+        sink = Sink()
+        params = ('filename', 6, 18, '    def func(self)\n')
+        sink.add_syntaxerror(SyntaxError('message', params))
+        out = sink.generate()
+
+        message = 'SyntaxError: message (filename, line 6)\n\n' \
+                  'def func(self)\n             ^'
+
+        expected = dict(name='filename',
+                        error=dict(message=message,
+                                   traceback=[dict(filename='filename',
+                                                   linenr=6,
+                                                   column=18)]))
+
+        self.assertEqual(out['syntaxerrors'], [expected])
+
+
+class SyntaxTest(unittest.TestCase):
+
+    def test_module_headers(self):
+        pass
