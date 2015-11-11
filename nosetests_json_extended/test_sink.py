@@ -3,20 +3,22 @@ from __future__ import absolute_import
 import unittest
 
 from nosetests_json_extended.sink import Sink
-from nosetests_json_extended.sink import TestCaseDescription as TC
-from nosetests_json_extended.sink import ErrorDescription
+from nosetests_json_extended.plugin import TestCaseDescription as TC
+from nosetests_json_extended.plugin import SyntaxErrorReport
+from nosetests_json_extended.plugin import ErrorReport
 
 
 class SinkTest(unittest.TestCase):
 
     def test_module_headers(self):
         sink = Sink()
-        sink.add('success', TC('module.A', 'test1'), None)
-        sink.add('success', TC('module.A', 'test2'), None)
-        sink.add('success', TC('module.B', 'test3'), None)
-        sink.add('failed', TC('module.B', 'test4'), None)
-        sink.add('success', TC('module.C', 'test5'), None)
-        sink.add('error', TC('module.C', 'test6'), None)
+        sink.add('success', TC('module.A', 'test1', None, None), None)
+        sink.add('success', TC('module.A', 'test2', None, None), None)
+        sink.add('success', TC('module.B', 'test3', None, None), None)
+        sink.add('failed', TC('module.B', 'test4', None, None), None)
+        sink.add('success', TC('module.C', 'test5', None, None), None)
+        sink.add('error', TC('module.C', 'test6', None, None), None)
+        sink.add_syntaxerror(SyntaxErrorReport('file.py', 3, 4, 'msg'))
 
         out = sink.generate()
 
@@ -41,14 +43,16 @@ class SinkTest(unittest.TestCase):
         return sink.generate()
 
     def test_testcase_success(self):
-        out = self._single_testcase('success', TC('mod', 'test1'), None)
+        tc = TC('mod', 'test1', None, None)
+        out = self._single_testcase('success', tc, None)
         tc1 = out['modules'][0]['testcases'][0]
         self.assertEqual(tc1['name'], 'test1')
         self.assertEqual(tc1['result'], 'success')
 
     def test_testcase_failed(self):
-        er = ErrorDescription('error_desc', ['tb0', 'tb1'])
-        out = self._single_testcase('error', TC('mod', 'test1'), er)
+        er = ErrorReport('error_desc', ['tb0', 'tb1'])
+        tc = TC('mod', 'test1', None, None)
+        out = self._single_testcase('error', tc, er)
         tc1 = out['modules'][0]['testcases'][0]
 
         self.assertEqual(tc1['name'], 'test1')
@@ -58,15 +62,11 @@ class SinkTest(unittest.TestCase):
 
     def test_testcase_syntax(self):
         sink = Sink()
-        params = ('filename', 6, 18, '    def func(self)\n')
-        sink.add_syntaxerror(SyntaxError('message', params))
+        sink.add_syntaxerror(SyntaxErrorReport('filename', 6, 18, 'message'))
         out = sink.generate()
 
-        message = 'SyntaxError: message (filename, line 6)\n\n' \
-                  'def func(self)\n             ^'
-
         expected = dict(name='filename',
-                        error=dict(message=message,
+                        error=dict(message='message',
                                    traceback=[dict(filename='filename',
                                                    linenr=6,
                                                    column=18)]))

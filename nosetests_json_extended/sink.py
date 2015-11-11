@@ -3,11 +3,9 @@ import os
 import sys
 import time
 
-from collections import namedtuple, Counter
+from collections import Counter
 from operator import itemgetter, attrgetter
 
-TestCaseDescription = namedtuple('TestCaseDescription', 'module name')
-ErrorDescription = namedtuple('ErrorDescription', 'message traceback')
 
 
 class TestCase:
@@ -17,7 +15,10 @@ class TestCase:
         self.error = error
 
     def to_dict(self):
-        out = dict(name=self.testcase.name, result=self.result)
+        out = dict(name=self.testcase.name,
+                   filename=self.testcase.filename,
+                   linenr=self.testcase.linenr,
+                   result=self.result)
 
         if self.error:
             out['error'] = dict(message=self.error.message,
@@ -49,19 +50,9 @@ class Module:
 class Syntax:
     def __init__(self, error):
         self.filename = error.filename
-        self.linenr = error.lineno
-        self.column = error.offset
-
-        self.message = error.__class__.__name__ + ': ' + str(error)
-
-        if error.text:
-            self.message += '\n\n' + error.text.strip()
-
-            if error.offset:
-                text = error.text.rstrip()
-                nr_white_space = len(text) - len(text.lstrip())
-                nr = error.offset-nr_white_space-1
-                self.message += '\n' + ' ' * nr + '^'
+        self.linenr = error.linenr
+        self.column = error.column
+        self.message = error.message
 
     def to_dict(self):
         tb = [dict(filename=self.filename,

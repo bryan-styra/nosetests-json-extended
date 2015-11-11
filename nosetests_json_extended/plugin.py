@@ -2,10 +2,10 @@
 from __future__ import absolute_import
 
 import traceback
+from collections import namedtuple
 from nose.plugins import Plugin
 
-from nosetests_json_extended.sink import (Sink, TestCaseDescription,
-                                          ErrorDescription)
+from nosetests_json_extended.sink import Sink
 
 
 class JsonExtendedPlugin(Plugin):
@@ -29,24 +29,57 @@ class JsonExtendedPlugin(Plugin):
 
     def addError(self, test, err, capt=None):
         if issubclass(err[0], SyntaxError):
-            self._sink.add_syntaxerror(err[1])
+            self._sink.add_syntaxerror(syntax_error_report(err[1]))
         else:
-            self._sink.add('error', _split_id(test.id()), _format_error(err))
+            self._sink.add('error',
+                           testcase_description(test),
+                           error_report(err))
 
     def addFailure(self, test, err, capt=None, tb_info=None):
-        self._sink.add('failed', _split_id(test.id()), _format_error(err))
+        self._sink.add('failed',
+                       testcase_description(test),
+                       error_report(err))
 
     def addSuccess(self, test, capt=None):
-        self._sink.add('success', _split_id(test.id()), None)
+        self._sink.add('success', testcase_description(test), None)
 
 
-def _format_error(err):
+TestCaseDescription = namedtuple('TestCaseDescription',
+                                 'module name filename linenr')
+
+
+def testcase_description(test):
+
+    module, name = _split_id(test.id())
+
+    filename = None
+    linenr = None
+
+    try:
+        filename = test.address()[0]
+    except:
+        pass
+
+    try:
+        methodname = test.test._testMethodName
+        func = getattr(test.test, methodname)
+        linenr = func.__func__.__code__.co_firstlineno
+    except:
+        pass
+
+    return TestCaseDescription(module, name, filename, linenr)
+
+
+ErrorReport = namedtuple('ErrorReport', 'message traceback')
+
+
+def error_report(err):
     message_list = traceback.format_exception_only(err[0], err[1])
     message = '\n'.join(message_list).strip('\n')
 
     tb = list(wrap_traceback(traceback.extract_tb(err[2])))
 
-    return ErrorDescription(message, tb)
+    return ErrorReport(message, tb)
 
 
 def wrap_traceback(traceback_in):
@@ -57,4 +90,27 @@ def wrap_traceback(traceback_in):
 
 def _split_id(test_id):
     parts = test_id.split('.')
-    return TestCaseDescription('.'.join(parts[:-1]), parts[-1])
+    return '.'.join(parts[:-1]), parts[-1]
+
+
+
+
+SyntaxErrorReport = namedtuple('SyntaxErrorReport', 'filename linenr column message')
+
+def syntax_error_report(error):
+    filename = error.filename
+    linenr = error.lineno
+    column = error.offset
+
+    message = error.__class__.__name__ + ': ' + str(error)
+
+    if error.text:
+        message += '\n\n' + error.text.strip()
+
+        if error.offset:
+            text = error.text.rstrip()
+            nr_white_space = len(text) - len(text.lstrip())
+            nr = error.offset-nr_white_space-1
+            message += '\n' + ' ' * nr + '^'
+
+    return SyntaxErrorReport(filename, linenr, column, message)
