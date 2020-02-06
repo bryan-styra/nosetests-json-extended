@@ -74,12 +74,20 @@ ErrorReport = namedtuple('ErrorReport', 'message traceback')
 
 
 def error_report(err):
-    message_list = traceback.format_exception_only(err[0], err[1])
-    message = '\n'.join(message_list).strip('\n')
+    # The exception object may have been turned into a string, and Python 3's
+    # traceback.format_exception() expects an actual exception object of
+    # {type, value, traceback}.  So we work around it, by doing the work
+    # ourselves if ev is not an exception object.
 
-    tb = list(wrap_traceback(traceback.extract_tb(err[2])))
-
-    return ErrorReport(message, tb)
+    if not isinstance(err[1], BaseException):
+        message = err[1]
+        tb = list(wrap_traceback(traceback.extract_tb(err[2])))
+        return ErrorReport(message, tb)
+    else:
+        message_list = traceback.format_exception_only(err[0], err[1])
+        message = '\n'.join(message_list).strip('\n')
+        tb = list(wrap_traceback(traceback.extract_tb(err[2])))
+        return ErrorReport(message, tb)
 
 
 def wrap_traceback(traceback_in):
